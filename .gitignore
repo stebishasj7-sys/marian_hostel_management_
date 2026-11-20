@@ -1,5 +1,5 @@
-.env
-*.db
 __pycache__/
 *.pyc
-data/marian_hostel_db.json
+*.class
+*.log
+.env
