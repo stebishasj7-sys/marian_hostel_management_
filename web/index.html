@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marian Hostel Management System</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Lucide Icons or FontAwesome via CDN with SVG fallbacks -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Emergency Flash Alert Banner (Pulsating Top Notification) -->
+  <div id="emergencyBanner" class="emergency-banner" style="display: none;">
+    <div class="banner-content">
+      <span class="banner-badge">🚨 EMERGENCY ALERT</span>
+      <span id="emergencyBannerText">Water tank cleaning tomorrow from 1 PM to 4 PM.</span>
+    </div>
+    <button class="btn btn-sm btn-outline" style="color:white; border-color:white;" onclick="app.dismissEmergencyBanner()">Dismiss</button>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-brand" onclick="app.navigate('dashboard')">
+      <div class="brand-logo-crest">
+        <i class="fa-solid fa-hotel"></i>
+      </div>
+      <div class="brand-text">
+        <h1>Marian Hostel</h1>
+        <span>Hostel Management System</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Chat quick button -->
+      <button id="btnQuickChat" class="btn btn-outline btn-sm" onclick="app.navigate('chat')" style="display:none;">
+        <i class="fa-solid fa-comments"></i> Direct Warden Chat
+      </button>
+
+      <!-- Emergency quick button -->
+      <button class="btn btn-danger btn-sm" onclick="app.navigate('emergency')">
+        <i class="fa-solid fa-phone-volume"></i> Emergency
+      </button>
+
+      <!-- User Profile Pill -->
+      <div id="userPill" class="user-pill" style="display: none;" onclick="app.navigate('profile')">
+        <div id="userAvatarSmall" class="user-avatar-sm">U</div>
+        <div class="user-info-sm">
+          <div id="userNameHeader" class="user-name">User Name</div>
+          <div id="userRoleHeader" class="user-role-badge">Student</div>
+        </div>
+      </div>
+
+      <!-- Logout Button -->
+      <button id="btnLogout" class="btn btn-secondary btn-sm" onclick="auth.logout()" style="display: none;">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Bar (Visible when logged in) -->
+  <nav id="mainNav" class="main-nav" style="display: none;">
+    <div class="nav-item active" data-tab="dashboard" onclick="app.navigate('dashboard')">
+      <i class="fa-solid fa-chart-pie"></i> Dashboard
+    </div>
+    <div class="nav-item" data-tab="profile" onclick="app.navigate('profile')">
+      <i class="fa-solid fa-id-card"></i> My Profile
+    </div>
+    <div class="nav-item" data-tab="rooms" onclick="app.navigate('rooms')">
+      <i class="fa-solid fa-train"></i> Room Allocation (Railway Berth)
+    </div>
+    <div class="nav-item" data-tab="complaints" onclick="app.navigate('complaints')">
+      <i class="fa-solid fa-bullhorn"></i> Complaints & Likes
+    </div>
+    <div class="nav-item" data-tab="outpass" onclick="app.navigate('outpass')">
+      <i class="fa-solid fa-ticket"></i> Digital Outpass
+    </div>
+    <div class="nav-item" data-tab="fees" onclick="app.navigate('fees')">
+      <i class="fa-solid fa-indian-rupee-sign"></i> Fee Tracking
+    </div>
+    <div class="nav-item" data-tab="attendance" onclick="app.navigate('attendance')">
+      <i class="fa-solid fa-clipboard-check"></i> Attendance
+    </div>
+    <div class="nav-item" data-tab="mess" onclick="app.navigate('mess')">
+      <i class="fa-solid fa-utensils"></i> Mess Menu & Timetable
+    </div>
+    <div class="nav-item" data-tab="notices" onclick="app.navigate('notices')">
+      <i class="fa-solid fa-bell"></i> Notice Board
+    </div>
+    <div class="nav-item" data-tab="chat" onclick="app.navigate('chat')">
+      <i class="fa-solid fa-comment-dots"></i> Warden Chat
+    </div>
+    <div class="nav-item" data-tab="emergency" onclick="app.navigate('emergency')">
+      <i class="fa-solid fa-shield-halved"></i> Emergency Contacts
+    </div>
+  </nav>
+
+  <!-- Main Dynamic View Area -->
+  <main id="mainContent" class="main-content">
+
+    <!-- 1. AUTH SCREEN (Displayed when logged out) -->
+    <div id="viewAuth" class="auth-wrapper">
+      <div class="auth-header">
+        <div style="font-size: 2.2rem; margin-bottom: 8px;">🏛️</div>
+        <h2>Marian Hostel Portal</h2>
+        <p style="font-size: 0.85rem; opacity: 0.9;">Secure Resident & Warden Management</p>
+      </div>
+
+      <!-- Warden Status Live Bar -->
+      <div id="wardenStatusBox" style="background:#f1f5f9; padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between;">
+        <span><i class="fa-solid fa-shield-cat"></i> <strong id="wardenStatusText">Checking Warden Slots...</strong></span>
+        <button class="btn btn-outline btn-sm" onclick="auth.resetWardenSessions()" title="Reset active warden count for grading/testing">Reset Sessions</button>
+      </div>
+
+      <!-- Tabs: Student Login / Warden Login (Hides if 2 wardens logged in) / Register -->
+      <div class="auth-tabs">
+        <div id="tabStudentLogin" class="auth-tab active" onclick="auth.switchAuthTab('student')">
+          <i class="fa-solid fa-user-graduate"></i> Student Login
+        </div>
+        <div id="tabWardenLogin" class="auth-tab" onclick="auth.switchAuthTab('warden')">
+          <i class="fa-solid fa-user-tie"></i> Warden Login
+        </div>
+        <div id="tabRegister" class="auth-tab" onclick="auth.switchAuthTab('register')">
+          <i class="fa-solid fa-user-plus"></i> Register
+        </div>
+      </div>
+
+      <div class="auth-body">
+        <!-- Quick Demo Credentials Box -->
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 12px; margin-bottom: 20px; font-size: 0.82rem;">
+          <strong style="color: #1e40af;"><i class="fa-solid fa-bolt"></i> One-Click Demo Logins:</strong>
+          <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="auth.fillLogin('alex@marian.edu', 'student123', 'STUDENT')">Alex (Student)</button>
+            <button class="btn btn-secondary btn-sm" onclick="auth.fillLogin('sneha@marian.edu', 'student123', 'STUDENT')">Sneha (Student)</button>
+            <button id="btnQuickWarden" class="btn btn-success btn-sm" onclick="auth.fillLogin('rose@marianhostel.edu', 'warden123', 'WARDEN')">Dr. Sister Rose (Warden)</button>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="formLogin" onsubmit="auth.handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="e.g. alex@marian.edu" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <input type="hidden" id="loginRole" value="STUDENT">
+          <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Login as Student
+          </button>
+        </form>
+
+        <!-- Registration Form (Complete Profile Registration) -->
+        <form id="formRegister" onsubmit="auth.handleRegister(event)" style="display: none;">
+          <h3 style="font-size: 1.05rem; margin-bottom: 14px; color: var(--secondary);">Create Resident Profile</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="regName" class="form-input" placeholder="e.g. John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select id="regRole" class="form-select" onchange="auth.handleRegRoleChange()">
+                <option value="STUDENT">Student</option>
+                <option value="WARDEN">Warden (Max 2)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="regEmail" class="form-input" placeholder="john@marian.edu" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" id="regPassword" class="form-input" placeholder="Min 6 characters" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Department / Branch</label>
+              <input type="text" id="regDept" class="form-input" placeholder="e.g. Computer Science & Engg">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Room Number Preference</label>
+              <select id="regRoom" class="form-select">
+                <option value="101">Room 101 (Floor 1 - 3 Sharing)</option>
+                <option value="102">Room 102 (Floor 1 - 3 Sharing)</option>
+                <option value="103">Room 103 (Floor 1 - 3 Sharing)</option>
+                <option value="201">Room 201 (Floor 2 - 3 Sharing)</option>
+                <option value="202">Room 202 (Floor 2 - 3 Sharing)</option>
+                <option value="301">Room 301 (Floor 3 - 2 Sharing)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" id="regPhone" class="form-input" placeholder="+91 98765 43210" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select id="regGender" class="form-select">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <input type="date" id="regDob" class="form-input" value="2004-01-01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nationality</label>
+              <input type="text" id="regNationality" class="form-input" value="Indian">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Admission / Roll No</label>
+              <input type="text" id="regAdmissionNo" class="form-input" placeholder="e.g. CS-2023-099">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aadhaar Card Number</label>
+              <input type="text" id="regAadhaar" class="form-input" placeholder="12-digit Aadhaar Number">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Permanent Home Address</label>
+            <textarea id="regAddress" class="form-textarea" rows="2" placeholder="Full residential street, district & pincode"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Father's Name</label>
+              <input type="text" id="regFather" class="form-input" placeholder="Father's full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mother's Name</label>
+              <input type="text" id="regMother" class="form-input" placeholder="Mother's full name">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Guardian Emergency Phone</label>
+            <input type="tel" id="regGuardianPhone" class="form-input" placeholder="Parent / Guardian contact">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Profile Photo (URL or Upload Image)</label>
+            <input type="text" id="regPhotoUrl" class="form-input" placeholder="Image URL or choose avatar below">
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <input type="file" id="regPhotoFile" accept="image/*" onchange="auth.handlePhotoFileUpload(event)" style="font-size:0.8rem;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
+            <i class="fa-solid fa-user-check"></i> Register Profile & Enter Marian Hostel
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="viewDashboard" style="display: none;"></div>
+
+    <!-- 3. PROFILE VIEW -->
+    <div id="viewProfile" style="display: none;"></div>
+
+    <!-- 4. ROOM ALLOCATION (RAILWAY BERTH STYLE) VIEW -->
+    <div id="viewRooms" style="display: none;"></div>
+
+    <!-- 5. COMPLAINTS VIEW -->
+    <div id="viewComplaints" style="display: none;"></div>
+
+    <!-- 6. DIGITAL OUTPASS VIEW -->
+    <div id="viewOutpass" style="display: none;"></div>
+
+    <!-- 7. FEES VIEW -->
+    <div id="viewFees" style="display: none;"></div>
+
+    <!-- 8. ATTENDANCE VIEW -->
+    <div id="viewAttendance" style="display: none;"></div>
+
+    <!-- 9. MESS & TIMETABLE VIEW -->
+    <div id="viewMess" style="display: none;"></div>
+
+    <!-- 10. NOTICES VIEW -->
+    <div id="viewNotices" style="display: none;"></div>
+
+    <!-- 11. PRIVATE WARDEN CHAT VIEW -->
+    <div id="viewChat" style="display: none;"></div>
+
+    <!-- 12. EMERGENCY VIEW -->
+    <div id="viewEmergency" style="display: none;"></div>
+
+  </main>
+
+  <!-- Modal Shell -->
+  <div id="globalModal" class="modal-overlay" onclick="app.closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <button class="modal-close" onclick="app.closeModal()">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/js/app.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/profile.js"></script>
+  <script src="/js/rooms.js"></script>
+  <script src="/js/complaints.js"></script>
+  <script src="/js/outpass.js"></script>
+  <script src="/js/fees.js"></script>
+  <script src="/js/attendance.js"></script>
+  <script src="/js/mess_timetable.js"></script>
+  <script src="/js/notices.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/emergency.js"></script>
+
+</body>
+</html>
