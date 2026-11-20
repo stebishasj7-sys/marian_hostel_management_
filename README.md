@@ -52,7 +52,7 @@ Open **[http://localhost:8080](http://localhost:8080)** in your browser.
 - **Profile Photo Upload**: Students can upload their profile photo (local image file reader with Base64 encoding or image URL).
 - Students can edit their personal details anytime with instant persistence.
 
-### 3. 🚂 IRCTC Railway-Style Room & Berth Allocation
+### 3. Room & Berth Allocation
 - **Train Coach / Berth Visualizer**:
   - Floor 1 (Rooms 101 - 105, 3-Sharing Delux)
   - Floor 2 (Rooms 201 - 205, 3-Sharing Standard)
